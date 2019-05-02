@@ -110,16 +110,19 @@ int main(void)
 		HAL_GPIO_TogglePin(GPIOA, Header1_Pin);
     HAL_Delay(500);
 
-		char data[12];
+		char data[16];
 
     HAL_ADC_Start(&hadc1);
 
 		for (int i = 0; i < 3; i++) {
 			HAL_ADC_PollForConversion(&hadc1, 100); // Handle, timeout
 			uint32_t adcResult = HAL_ADC_GetValue(&hadc1);
-			sprintf(data, "%ld", adcResult);
+			sprintf(data, "%ld; ", adcResult);
 			CDC_Transmit_FS((unsigned char*)data, strlen(data));
 		}
+		sprintf(data, "\r\n");
+		CDC_Transmit_FS((unsigned char*)data, strlen(data));
+		
 
     HAL_ADC_Stop(&hadc1);
 
