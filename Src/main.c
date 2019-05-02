@@ -24,6 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "usbd_cdc_if.h"
 
 /* USER CODE END Includes */
 
@@ -106,6 +107,8 @@ int main(void)
     /* USER CODE BEGIN 3 */
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
     HAL_GPIO_TogglePin(GPIOA, Header1_Pin);
+		unsigned char data[] = "Yo";
+		CDC_Transmit_FS(data, 2);
     HAL_Delay(500);
   }
   /* USER CODE END 3 */
