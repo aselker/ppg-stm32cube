@@ -107,16 +107,22 @@ int main(void)
     /* USER CODE BEGIN 3 */
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
     // HAL_GPIO_TogglePin(GreenLED_GPIO_Port, GreenLED_Pin);
+		HAL_GPIO_TogglePin(GPIOA, Header1_Pin);
     HAL_Delay(500);
 
+		char data[12];
+
     HAL_ADC_Start(&hadc1);
-    HAL_ADC_PollForConversion(&hadc1, 100);
-    uint32_t adcResult = HAL_ADC_GetValue(&hadc1);
+
+		for (int i = 0; i < 3; i++) {
+			HAL_ADC_PollForConversion(&hadc1, 100); // Handle, timeout
+			uint32_t adcResult = HAL_ADC_GetValue(&hadc1);
+			sprintf(data, "%ld", adcResult);
+			CDC_Transmit_FS((unsigned char*)data, strlen(data));
+		}
+
     HAL_ADC_Stop(&hadc1);
 
-		char data[12];
-		sprintf(data, "%ld", adcResult);
-		CDC_Transmit_FS((unsigned char*)data, strlen(data));
 
   }
   /* USER CODE END 3 */
