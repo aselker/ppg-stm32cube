@@ -110,21 +110,18 @@ int main(void)
     /* USER CODE BEGIN 3 */
     // HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 
-		char data[4][16];
+		char data[16];
 
     HAL_ADC_Start(&hadc1);
-		for (int i = 0; i < 3; i++) {
-			HAL_ADC_PollForConversion(&hadc1, 100); // Handle, timeout
-			uint32_t adcResult = HAL_ADC_GetValue(&hadc1);
-			sprintf(data[i], "%ld; ", adcResult);
-		}
+		HAL_ADC_PollForConversion(&hadc1, 100); // IR (throw away)
+		HAL_ADC_PollForConversion(&hadc1, 100); // Green
+		uint32_t adcResult = HAL_ADC_GetValue(&hadc1);
+		sprintf(data, "%ld\n", adcResult);
+		// HAL_ADC_PollForConversion(&hadc1, 100); // Battery (throw away)
     HAL_ADC_Stop(&hadc1);
 
-		sprintf(data[3], "\r\n");
-		for (int i = 0; i < 4; i++) {
-			CDC_Transmit_FS((unsigned char*)data[i], strlen(data[i]));
-			HAL_Delay(5);
-		}
+		CDC_Transmit_FS((unsigned char*)data, strlen(data));
+		HAL_Delay(1);
 		
 
   }
