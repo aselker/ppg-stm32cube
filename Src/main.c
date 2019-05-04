@@ -95,6 +95,9 @@ int main(void)
   MX_ADC1_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
+	// Turn on the IR and green LEDs
+	HAL_GPIO_WritePin(IRLED_GPIO_Port, IRLED_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GreenLED_GPIO_Port, GreenLED_Pin, GPIO_PIN_SET);
 
   /* USER CODE END 2 */
 
@@ -105,27 +108,24 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-    // HAL_GPIO_TogglePin(GreenLED_GPIO_Port, GreenLED_Pin);
-		HAL_GPIO_TogglePin(GPIOA, Header1_Pin);
-    HAL_Delay(500);
+    // HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 
-		char data[16];
+		char data[4][16];
 
     HAL_ADC_Start(&hadc1);
-
 		for (int i = 0; i < 3; i++) {
 			HAL_ADC_PollForConversion(&hadc1, 100); // Handle, timeout
 			uint32_t adcResult = HAL_ADC_GetValue(&hadc1);
-			sprintf(data, "%ld; ", adcResult);
-			CDC_Transmit_FS((unsigned char*)data, strlen(data));
+			sprintf(data[i], "%ld; ", adcResult);
 		}
-		sprintf(data, "\r\n");
-		CDC_Transmit_FS((unsigned char*)data, strlen(data));
-		
-
     HAL_ADC_Stop(&hadc1);
 
+		sprintf(data[3], "\r\n");
+		for (int i = 0; i < 4; i++) {
+			CDC_Transmit_FS((unsigned char*)data[i], strlen(data[i]));
+			HAL_Delay(5);
+		}
+		
 
   }
   /* USER CODE END 3 */
