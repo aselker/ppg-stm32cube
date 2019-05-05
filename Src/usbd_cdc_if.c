@@ -115,8 +115,8 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
 // Global variables storing data so we can print it over serial
-extern volatile int do_send_readings = 0;
-extern volatile int do_clear = 0;
+extern volatile int do_send_readings;
+extern volatile int do_clear;
 
 /* USER CODE END EXPORTED_VARIABLES */
 

@@ -64,7 +64,7 @@ static void MX_ADC1_Init(void);
 // Global variables storing data so we can print it over serial
 volatile int do_send_readings = 0;
 volatile int do_clear = 0;
-
+const int num_readings = 4096;
 
 
 /* USER CODE END 0 */
@@ -103,8 +103,8 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
-	int32_t readings[1024];
-	int valid_readings = 0; // If < 1023, then the rest of the readings are uninitialized
+	int32_t readings[num_readings];
+	int valid_readings = 0; // If < num_readings, then the rest of the readings are uninitialized
 	int curr_reading = 0; // Oldest readings, and the next to be written
 
 	// Turn on the IR and green LEDs
@@ -128,14 +128,14 @@ int main(void)
 		readings[curr_reading] = HAL_ADC_GetValue(&hadc1);
     HAL_ADC_Stop(&hadc1);
 
-		if (valid_readings < 1023) valid_readings++;
-		curr_reading = (curr_reading + 1) % 1024;
+		if (valid_readings < (num_readings-1)) valid_readings++;
+		curr_reading = (curr_reading + 1) % num_readings;
 
 		if (do_send_readings) {
 			// send data
 			char data[16];
 			for(int i = 0; i < valid_readings; i++) {
-				sprintf(data, "%ld\n", readings[(i+curr_reading)%1024]);
+				sprintf(data, "%ld\n", readings[(i+curr_reading) % num_readings]);
 				CDC_Transmit_FS((unsigned char*)data, strlen(data));
 			}
 			do_send_readings = 0;
