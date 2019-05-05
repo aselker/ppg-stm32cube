@@ -64,7 +64,7 @@ static void MX_ADC1_Init(void);
 // Global variables storing data so we can print it over serial
 volatile int do_send_readings = 0;
 volatile int do_clear = 0;
-const int num_readings = 4096;
+const int num_readings = 16384;
 
 
 /* USER CODE END 0 */
@@ -123,13 +123,15 @@ int main(void)
     // HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 
 
-    HAL_ADC_Start(&hadc1);
-		HAL_ADC_PollForConversion(&hadc1, 100); // Green
-		readings[curr_reading] = HAL_ADC_GetValue(&hadc1);
-    HAL_ADC_Stop(&hadc1);
+		if (valid_readings < num_readings) { // Delete this for rolling buffer
+			HAL_ADC_Start(&hadc1);
+			HAL_ADC_PollForConversion(&hadc1, 100); // Green
+			readings[curr_reading] = HAL_ADC_GetValue(&hadc1);
+			HAL_ADC_Stop(&hadc1);
 
-		if (valid_readings < (num_readings-1)) valid_readings++;
-		curr_reading = (curr_reading + 1) % num_readings;
+			if (valid_readings < num_readings) valid_readings++;
+			curr_reading = (curr_reading + 1) % num_readings;
+		}
 
 		if (do_send_readings) {
 			// send data
