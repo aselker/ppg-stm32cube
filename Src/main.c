@@ -62,9 +62,9 @@ static void MX_ADC1_Init(void);
 /* USER CODE BEGIN 0 */
 
 // Global variables storing data so we can print it over serial
-volatile int32_t readings[1024];
-volatile int valid_readings = 0; // If < 1023, then the rest of the readings are uninitialized
-volatile int curr_reading = 0; // Oldest readings, and the next to be written
+volatile int do_send_readings = 0;
+volatile int do_clear = 0;
+
 
 
 /* USER CODE END 0 */
@@ -100,7 +100,13 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_USB_DEVICE_Init();
+
   /* USER CODE BEGIN 2 */
+
+	int32_t readings[1024];
+	int valid_readings = 0; // If < 1023, then the rest of the readings are uninitialized
+	int curr_reading = 0; // Oldest readings, and the next to be written
+
 	// Turn on the IR and green LEDs
 	HAL_GPIO_WritePin(IRLED_GPIO_Port, IRLED_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GreenLED_GPIO_Port, GreenLED_Pin, GPIO_PIN_SET);
@@ -120,9 +126,26 @@ int main(void)
     HAL_ADC_Start(&hadc1);
 		HAL_ADC_PollForConversion(&hadc1, 100); // Green
 		readings[curr_reading] = HAL_ADC_GetValue(&hadc1);
+    HAL_ADC_Stop(&hadc1);
+
 		if (valid_readings < 1023) valid_readings++;
 		curr_reading = (curr_reading + 1) % 1024;
-    HAL_ADC_Stop(&hadc1);
+
+		if (do_send_readings) {
+			// send data
+			char data[16];
+			for(int i = 0; i < valid_readings; i++) {
+				sprintf(data, "%ld\n", readings[(i+curr_reading)%1024]);
+				CDC_Transmit_FS((unsigned char*)data, strlen(data));
+			}
+			do_send_readings = 0;
+		}
+		if (do_clear) {
+			// clear data
+			valid_readings = 0;
+			curr_reading = 0;
+			do_clear = 0;
+		}
 
 		HAL_Delay(1);
 		
