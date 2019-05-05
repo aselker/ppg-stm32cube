@@ -114,6 +114,10 @@ uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
+// Global variables storing data so we can print it over serial
+extern volatile int32_t readings[1024];
+extern volatile int valid_readings; // If < 1023, then the rest of the readings are uninitialized
+extern volatile int curr_reading; // Oldest readings, and the next to be written
 
 /* USER CODE END EXPORTED_VARIABLES */
 
@@ -263,13 +267,19 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
+	// Should this code run quickly so we don't spend too long in an ISR?
+	// I will assume we don't have to worry about that.
 
-	if (Buf[0] == '0') {
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
-		// char data[] = "Turned off!";
-		// CDC_Transmit_FS(data, strlen(data));
-	} else if (Buf[0] == '1') {
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
+
+	if (Buf[0] == 'G') {
+		char data[16];
+		for(int i = 0; i < valid_readings; i++) {
+			sprintf(data, "%ld\n", readings[(i+curr_reading)%1024]);
+			CDC_Transmit_FS((unsigned char*)data, strlen(data));
+		}
+	} else if (Buf[0] == 'C') {
+		valid_readings = 0;
+		curr_reading = 0;
 	}
 
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);

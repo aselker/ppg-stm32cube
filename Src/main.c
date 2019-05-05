@@ -61,6 +61,12 @@ static void MX_ADC1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+// Global variables storing data so we can print it over serial
+volatile int32_t readings[1024];
+volatile int valid_readings = 0; // If < 1023, then the rest of the readings are uninitialized
+volatile int curr_reading = 0; // Oldest readings, and the next to be written
+
+
 /* USER CODE END 0 */
 
 /**
@@ -110,15 +116,14 @@ int main(void)
     /* USER CODE BEGIN 3 */
     // HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 
-		char data[16];
 
     HAL_ADC_Start(&hadc1);
 		HAL_ADC_PollForConversion(&hadc1, 100); // Green
-		uint32_t adcResult = HAL_ADC_GetValue(&hadc1);
-		sprintf(data, "%ld\n", adcResult);
+		readings[curr_reading] = HAL_ADC_GetValue(&hadc1);
+		if (valid_readings < 1023) valid_readings++;
+		curr_reading = (curr_reading + 1) % 1024;
     HAL_ADC_Stop(&hadc1);
 
-		CDC_Transmit_FS((unsigned char*)data, strlen(data));
 		HAL_Delay(1);
 		
 
