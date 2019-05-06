@@ -266,10 +266,6 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
-	// Should this code run quickly so we don't spend too long in an ISR?
-	// I will assume we don't have to worry about that.
-
-
 	if (Buf[0] == 'G') {
 		do_send_readings = 1;
 	} else if (Buf[0] == 'C') {
