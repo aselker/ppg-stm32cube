@@ -1,3 +1,51 @@
+### Blink
+// File: main.c
+
+while (1)
+{
+	/* USER CODE END WHILE */
+
+	/* USER CODE BEGIN 3 */
+	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+	HAL_GPIO_TogglePin(GPIOA, Header1_Pin);
+	HAL_Delay(500);
+}
+
+
+
+### Analog Read
+// File: main.c
+
+while (1)
+{
+	/* USER CODE END WHILE */
+
+	/* USER CODE BEGIN 3 */
+	// HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+
+	char data[4][16];
+
+	HAL_ADC_Start(&hadc1);
+	for (int i = 0; i < 3; i++) {
+		HAL_ADC_PollForConversion(&hadc1, 100); // Handle, timeout
+		uint32_t adcResult = HAL_ADC_GetValue(&hadc1);
+		sprintf(data[i], "%ld; ", adcResult);
+	}
+	HAL_ADC_Stop(&hadc1);
+
+	sprintf(data[3], "\r\n");
+	for (int i = 0; i < 4; i++) {
+		CDC_Transmit_FS((unsigned char*)data[i], strlen(data[i]));
+		HAL_Delay(5);
+	}
+}
+
+
+
+### Serial Communication
+
+
+### Final Code
 // File: usbd_cdc_if.c
 
 // Volatile globals are used for communication between the main
@@ -24,24 +72,6 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 }
 
 
-
-### Blink
-// File: main.c
-
-while (1)
-{
-	/* USER CODE END WHILE */
-
-	/* USER CODE BEGIN 3 */
-	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-	HAL_GPIO_TogglePin(GPIOA, Header1_Pin);
-	HAL_Delay(500);
-}
-
-### Analog Read
-
-
-### Final Code
 // File: main.c
 
 // Apparently const's are nicer than #DEFINE's?
